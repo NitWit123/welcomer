@@ -13,8 +13,8 @@
             padding: 0;
             color: #f8f8f8;
             display: flex;
-            align-items: flex-start;
-            justify-content: flex-start;
+            align-items: center;
+            justify-content: flex-end;
             height: 100vh;
             overflow: hidden;
             position: relative;
@@ -26,9 +26,7 @@
             border-radius: 14px;
             padding: 16px;
             border: 1px solid rgba(250, 204, 21, 0.3);
-            position: absolute;
-            top: 2%;
-            left: 2%;
+            margin-right: 2%;
             overflow: hidden;
             animation: slideIn 0.4s ease-out, fadeOut 0.5s ease-in 2.5s forwards;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -36,7 +34,7 @@
 
         @keyframes slideIn {
             from {
-                transform: translateX(-100%);
+                transform: translateX(100%);
                 opacity: 0;
             }
             to {
@@ -52,7 +50,7 @@
             }
         }
 
-        /* تأثير الموجة */
+        /* Wave Effect */
         .wave-effect {
             position: absolute;
             top: 0;
@@ -79,7 +77,7 @@
             100% { left: 130%; }
         }
 
-        /* هيكل المستخدم */
+        /* User Header */
         .user-header {
             display: flex;
             align-items: center;
@@ -127,7 +125,7 @@
             opacity: 0.85;
         }
 
-        /* خط توهج */
+        /* Glow Line */
         .glow-line {
             height: 1px;
             background: linear-gradient(90deg, 
@@ -175,16 +173,16 @@
 
         <div class="glow-line"></div>
 
-        <p class="welcome-text">أهلاً وسهلاً بك في السيرفر!</p>
+        <p class="welcome-text">Welcome to the server!</p>
 
     </div>
 
     <script>
-        // استقبال الرسائل من Lua
+        // Receive data from Lua
         window.addEventListener('message', function(event) {
             const data = event.data;
             if (data.type === "show_welcome") {
-                document.getElementById('displayName').textContent = data.displayName || "مستخدم";
+                document.getElementById('displayName').textContent = data.displayName || "User";
                 document.getElementById('username').textContent = "@" + (data.username || "unknown");
                 if (data.avatar) {
                     document.getElementById('userAvatar').src = data.avatar;
@@ -192,7 +190,7 @@
             }
         });
 
-        // إخفاء تلقائي بعد 3 ثواني
+        // Auto-hide after 3 seconds
         setTimeout(() => {
             document.querySelector('.notification-box').style.opacity = '0';
             setTimeout(() => {
