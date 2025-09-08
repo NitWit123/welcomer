@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Notification</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: transparent;
+            overflow: hidden;
+        }
+
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 300px;
+            background: linear-gradient(135deg, rgba(88, 101, 242, 0.95), rgba(88, 101, 242, 0.85));
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            transform: translateX(-100%);
+            transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .notification-container.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .notification-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin-right: 12px;
+            background: #36393f;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .display-name {
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+            margin: 0;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .username {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            font-weight: 400;
+            margin: 2px 0 0 0;
+        }
+
+        .welcome-text {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            margin: 8px 0 0 0;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 1px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ffffff, rgba(255, 255, 255, 0.8));
+            width: 0%;
+            transition: width 3s linear;
+        }
+    </style>
+</head>
+<body>
+    <div class="notification-container" id="notification">
+        <div class="notification-header">
+            <img class="avatar" id="avatar" src="" alt="Avatar">
+            <div class="user-info">
+                <p class="display-name" id="displayName">مرحبا</p>
+                <p class="username" id="username">@loading...</p>
+            </div>
+        </div>
+        <p class="welcome-text">🎉 أهلاً وسهلاً بك!</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <script>
+        let hideTimeout;
+
+        window.addEventListener("message", function(event) {
+            const data = event.data;
+            
+            if (data.type === "show_welcome") {
+                showWelcomeNotification(data);
+            } else if (data.type === "hide") {
+                hideNotification();
+            }
+        });
+
+        function showWelcomeNotification(userData) {
+            const notification = document.getElementById('notification');
+            const avatar = document.getElementById('avatar');
+            const displayName = document.getElementById('displayName');
+            const username = document.getElementById('username');
+            const progressFill = document.getElementById('progressFill');
+
+            // Update user data
+            if (userData.avatar) {
+                avatar.src = userData.avatar;
+            }
+            
+            if (userData.displayName) {
+                displayName.textContent = userData.displayName;
+            }
+            
+            if (userData.username) {
+                username.textContent = '@' + userData.username;
+            }
+
+            // Show notification
+            notification.classList.add('show');
+            
+            // Start progress bar
+            setTimeout(() => {
+                progressFill.style.width = '100%';
+            }, 100);
+
+            // Auto hide after 3 seconds
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+            }
+            
+            hideTimeout = setTimeout(() => {
+                hideNotification();
+            }, 3500);
+        }
+
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            const progressFill = document.getElementById('progressFill');
+            
+            notification.classList.remove('show');
+            progressFill.style.width = '0%';
+            
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+                hideTimeout = null;
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Welcome notification DUI loaded');
+        });
+    </script>
+</body>
+</html>
