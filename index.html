@@ -28,8 +28,12 @@
             border: 1px solid rgba(250, 204, 21, 0.3);
             margin-right: 2%;
             overflow: hidden;
-            animation: slideIn 0.4s ease-out, fadeOut 0.5s ease-in 2.5s forwards;
+            animation: slideIn 0.4s ease-out;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .notification-box.fade-out {
+            animation: fadeOut 0.5s ease-in forwards;
         }
 
         @keyframes slideIn {
@@ -46,7 +50,7 @@
         @keyframes fadeOut {
             to {
                 opacity: 0;
-                transform: translateX(0);
+                transform: translateX(50px);
             }
         }
 
@@ -158,7 +162,7 @@
     </style>
 </head>
 <body>
-    <div class="notification-box">
+    <div class="notification-box" id="notificationBox">
         <div class="wave-effect"></div>
 
         <div class="user-header">
@@ -178,25 +182,58 @@
     </div>
 
     <script>
+        let hideTimeout;
+
         // Receive data from Lua
         window.addEventListener('message', function(event) {
             const data = event.data;
             if (data.type === "show_welcome") {
                 document.getElementById('displayName').textContent = data.displayName || "User";
                 document.getElementById('username').textContent = "@" + (data.username || "unknown");
+                
+                const avatarImg = document.getElementById('userAvatar');
                 if (data.avatar) {
-                    document.getElementById('userAvatar').src = data.avatar;
+                    // إضافة loading event للصورة
+                    avatarImg.onload = function() {
+                        console.log('Avatar loaded successfully');
+                    };
+                    avatarImg.onerror = function() {
+                        console.log('Avatar failed to load, using default');
+                        this.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    };
+                    avatarImg.src = data.avatar;
                 }
+
+                // بدء العد التنازلي للإخفاء بعد 5 ثواني
+                startHideTimer();
             }
         });
 
-        // Auto-hide after 3 seconds
-        setTimeout(() => {
-            document.querySelector('.notification-box').style.opacity = '0';
-            setTimeout(() => {
-                document.body.innerHTML = '';
-            }, 500);
-        }, 10000);
+        function startHideTimer() {
+            // إلغاء أي timer سابق
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+            }
+
+            // تشغيل timer جديد لمدة 5 ثواني
+            hideTimeout = setTimeout(() => {
+                const notificationBox = document.getElementById('notificationBox');
+                notificationBox.classList.add('fade-out');
+                
+                // إزالة المحتوى بعد انتهاء الـ animation
+                setTimeout(() => {
+                    document.body.innerHTML = '';
+                }, 500);
+            }, 5000); // 5 ثواني
+        }
+
+        // إرسال إشارة للـ Lua عند تحميل الصفحة بالكامل
+        window.addEventListener('load', function() {
+            // إشعار Lua أن الصفحة جاهزة
+            if (window.postMessage) {
+                window.postMessage({type: 'page_ready'}, '*');
+            }
+        });
     </script>
 </body>
 </html>
