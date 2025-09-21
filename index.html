@@ -37,21 +37,12 @@
         }
 
         @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
         @keyframes fadeOut {
-            to {
-                opacity: 0;
-                transform: translateX(50px);
-            }
+            to { opacity: 0; transform: translateX(50px); }
         }
 
         /* Wave Effect */
@@ -81,7 +72,6 @@
             100% { left: 130%; }
         }
 
-        /* User Header */
         .user-header {
             display: flex;
             align-items: center;
@@ -102,15 +92,9 @@
             flex-shrink: 0;
         }
 
-        .avatar {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+        .avatar { width: 100%; height: 100%; object-fit: cover; }
 
-        .user-info {
-            flex: 1;
-        }
+        .user-info { flex: 1; }
 
         .display-name {
             color: #fef08a;
@@ -129,7 +113,6 @@
             opacity: 0.85;
         }
 
-        /* Glow Line */
         .glow-line {
             height: 1px;
             background: linear-gradient(90deg, 
@@ -159,12 +142,6 @@
             50% { box-shadow: 0 0 24px rgba(255, 215, 0, 1); }
             100% { box-shadow: 0 0 12px rgba(255, 215, 0, 0.6); }
         }
-
-        /* Loading State */
-        .loading {
-            color: #94a3b8;
-            font-style: italic;
-        }
     </style>
 </head>
 <body>
@@ -182,74 +159,34 @@
         </div>
 
         <div class="glow-line"></div>
-
         <p class="welcome-text">Welcome to Aura!</p>
     </div>
 
     <script>
-        let hideTimeout;
-
-        window.addEventListener('message', async function(event) {
+        window.addEventListener('message', function(event) {
             const data = event.data;
 
-            if (data.type === "show_welcome_with_id" && data.discordId) {
-                document.getElementById('displayName').textContent = "Loading...";
-                document.getElementById('username').textContent = "@loading";
+            if (data.type === "show_welcome") {
+                document.getElementById('displayName').textContent = data.displayName || "User";
+                document.getElementById('username').textContent = "@" + (data.username || "unknown");
+                
                 const avatarImg = document.getElementById('userAvatar');
-                avatarImg.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
-
-                try {
-                    // 👇 جلب بيانات المستخدم مباشرة من Discord API عبر بروكسي
-                    const response = await fetch(`https://v2.cordapi.gq/user/${data.discordId}`);
-                    
-                    if (!response.ok) {
-                        throw new Error('User not found or API error');
-                    }
-
-                    const userData = await response.json();
-
-                    // استخراج البيانات
-                    const username = userData.username || "Unknown";
-                    const displayName = (userData.global_name && userData.global_name !== "null") ? userData.global_name : username;
-                    const avatarId = userData.avatar;
-
-                    // تحديث الواجهة
-                    document.getElementById('displayName').textContent = displayName;
-                    document.getElementById('username').textContent = "@" + username;
-
-                    if (avatarId) {
-                        const avatarUrl = `https://cdn.discordapp.com/avatars/${data.discordId}/${avatarId}.png?size=128`;
-                        avatarImg.src = avatarUrl;
-                        avatarImg.onerror = function() {
-                            this.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
-                        };
-                    }
-
-                } catch (error) {
-                    console.error("Failed to fetch Discord user:", error);
-                    document.getElementById('displayName').textContent = "User Not Found";
-                    document.getElementById('username').textContent = "@unknown";
+                if (data.avatar) {
+                    avatarImg.onerror = function() { this.src = 'https://cdn.discordapp.com/embed/avatars/0.png'; };
+                    avatarImg.src = data.avatar;
                 }
-
-                // بدء العد التنازلي للإخفاء
-                startHideTimer();
             }
             else if (data.type === "hide_welcome") {
                 const notificationBox = document.getElementById('notificationBox');
                 notificationBox.classList.add('fade-out');
-                
-                setTimeout(() => {
-                    document.body.innerHTML = '';
-                }, 500);
+                setTimeout(() => { document.body.innerHTML = ''; }, 500);
             }
         });
 
-        function startHideTimer() {
-            if (hideTimeout) clearTimeout(hideTimeout);
-            hideTimeout = setTimeout(() => {
-                window.postMessage({type: "hide_welcome"}, "*");
-            }, 2500); // يبدأ الإخفاء بعد 2.5 ثانية من ظهور البيانات
-        }
+        // إرسال رسالة لـLua أن الصفحة جاهزة
+        window.addEventListener('load', function() {
+            if (window.postMessage) { window.postMessage({type: 'page_ready'}, '*'); }
+        });
     </script>
 </body>
 </html>
