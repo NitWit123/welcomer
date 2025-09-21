@@ -178,22 +178,20 @@
         <div class="glow-line"></div>
 
         <p class="welcome-text">Welcome to Aura!</p>
-
     </div>
 
     <script>
         let hideTimeout;
 
-        // Receive data from Lua
         window.addEventListener('message', function(event) {
             const data = event.data;
+
             if (data.type === "show_welcome") {
                 document.getElementById('displayName').textContent = data.displayName || "User";
                 document.getElementById('username').textContent = "@" + (data.username || "unknown");
                 
                 const avatarImg = document.getElementById('userAvatar');
                 if (data.avatar) {
-                    // إضافة loading event للصورة
                     avatarImg.onload = function() {
                         console.log('Avatar loaded successfully');
                     };
@@ -203,33 +201,20 @@
                     };
                     avatarImg.src = data.avatar;
                 }
-
-                // بدء العد التنازلي للإخفاء بعد 5 ثواني
-                startHideTimer();
             }
-        });
-
-        function startHideTimer() {
-            // إلغاء أي timer سابق
-            if (hideTimeout) {
-                clearTimeout(hideTimeout);
-            }
-
-            // تشغيل timer جديد لمدة 5 ثواني
-            hideTimeout = setTimeout(() => {
+            // 👇 يستقبل أمر الإخفاء من Lua
+            else if (data.type === "hide_welcome") {
                 const notificationBox = document.getElementById('notificationBox');
                 notificationBox.classList.add('fade-out');
                 
-                // إزالة المحتوى بعد انتهاء الـ animation
                 setTimeout(() => {
                     document.body.innerHTML = '';
                 }, 500);
-            }, 5000); // 5 ثواني
-        }
+            }
+        });
 
-        // إرسال إشارة للـ Lua عند تحميل الصفحة بالكامل
+        // إشعار Lua عند التحميل (اختياري)
         window.addEventListener('load', function() {
-            // إشعار Lua أن الصفحة جاهزة
             if (window.postMessage) {
                 window.postMessage({type: 'page_ready'}, '*');
             }
